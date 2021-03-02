@@ -1,14 +1,24 @@
 # QC_piplinev1.0
 The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/RSII/Sequel/Sequel II),Nanopore platform
-Usage:
-Main arguments:
+sage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
+                        [-s SEQ_TYPE] [-omic OMIC_TYPE]
+                        [-fastp_p FASTP_PARAMETERS] [-ccs_p CCS_PARAMETERS]
+                        [-lima_p LIMA_PARAMETERS]
+                        [-isoseq3_p ISOSEQ3_PARAMETERS]
+                        [-lordec_p LORDEC_CORRECT_PARAMETERS]
+                        [-nanoplot_p NANOPLOT_PARAMETERS]
+                        inputs outputs
+
+QC pipline v1.0
+
 positional arguments:
   inputs                The input directiory(rawdata),the suffixes of short
                         reads in the directory must be _1/2.fq or _1/2.fq.gz
-                        or _1/2.fastq or _1/2.fastq.gz(PE),.fq or fq.gz or 
-                        fastq or fastq.gz(SE);the suffixes of pacbio
-                        long reads must be .subreads.bam(Sequel platform) or
-                        .1.bax.h5,.2.bax.h5,.3.bax.h5(RS/RSII platform);the
+                        or _1/2.fastq or _1/2.fastq.gz (paired-end reads),or
+                        .fq/.fq.gz/.fastq/.fastq.gz (single-end reads);the
+                        suffixes of pacbio long reads must be
+                        .subreads.bam(Sequel platform) or
+                        .1.bax.h5,.2.bax.h5,.3.bax.h5(RS platform);the
                         suffiexes of nanopore long reads must be .fastq.gz
   outputs               The output directiory(cleandata and report)
 
