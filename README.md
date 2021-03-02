@@ -1,6 +1,7 @@
 # QC_piplinev1.0
 The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/RSII/Sequel/Sequel II),Nanopore platform
-sage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
+
+Usage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
                         [-s SEQ_TYPE] [-omic OMIC_TYPE]
                         [-fastp_p FASTP_PARAMETERS] [-ccs_p CCS_PARAMETERS]
                         [-lima_p LIMA_PARAMETERS]
@@ -8,8 +9,6 @@ sage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
                         [-lordec_p LORDEC_CORRECT_PARAMETERS]
                         [-nanoplot_p NANOPLOT_PARAMETERS]
                         inputs outputs
-
-QC pipline v1.0
 
 positional arguments:
   inputs                The input directiory(rawdata),the suffixes of short
