@@ -10,16 +10,16 @@ Usage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
                         [-nanoplot_p NANOPLOT_PARAMETERS]  
                         inputs outputs  
 
-positional arguments:
-  inputs                The input directiory(rawdata),the suffixes of short
-                        reads in the directory must be _1/2.fq or _1/2.fq.gz
-                        or _1/2.fastq or _1/2.fastq.gz (paired-end reads),or
-                        .fq/.fq.gz/.fastq/.fastq.gz (single-end reads);the
-                        suffixes of pacbio long reads must be
-                        .subreads.bam(Sequel platform) or
-                        .1.bax.h5,.2.bax.h5,.3.bax.h5(RS platform);the
-                        suffiexes of nanopore long reads must be .fastq.gz
-  outputs               The output directiory(cleandata and report)
+positional arguments:  
+  inputs                The input directiory(rawdata),the suffixes of short  
+                        reads in the directory must be _1/2.fq or _1/2.fq.gz  
+                        or _1/2.fastq or _1/2.fastq.gz (paired-end reads),or  
+                        .fq/.fq.gz/.fastq/.fastq.gz (single-end reads);the  
+                        suffixes of pacbio long reads must be  
+                        .subreads.bam(Sequel platform) or  
+                        .1.bax.h5,.2.bax.h5,.3.bax.h5(RS platform);the  
+                        suffiexes of nanopore long reads must be .fastq.gz  
+  outputs               The output directiory(cleandata and report)  
 
 optional arguments:
   -h, --help            show this help message and exit
