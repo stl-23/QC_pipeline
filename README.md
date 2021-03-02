@@ -1,7 +1,7 @@
 # QC_piplinev1.0
 The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/RSII/Sequel/Sequel II),ONT nanopore platform
 
-Usage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]  
+<b>Usage</b>: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]  
 		[-s SEQ_TYPE] [-omic OMIC_TYPE]  
 		[-fastp_p FASTP_PARAMETERS] [-ccs_p CCS_PARAMETERS]  
 		[-lima_p LIMA_PARAMETERS]  
@@ -10,7 +10,7 @@ Usage: QC_pipline_v1.py [-h] [-c {illumina,pacbio,nanopore}] [-cr CORRECTION]
 		[-nanoplot_p NANOPLOT_PARAMETERS]  
 		inputs outputs  
 
-positional arguments:  
+<b>positional arguments: </b> 
   <b>inputs</b>                The input directiory(rawdata),the suffixes of short  
                         reads in the directory must be _1/2.fq or _1/2.fq.gz  
                         or _1/2.fastq or _1/2.fastq.gz (paired-end reads),or  
@@ -21,7 +21,7 @@ positional arguments:
                         suffiexes of nanopore long reads must be .fastq.gz  
   <b>outputs</b>               The output directiory(cleandata and report)  
 
-optional arguments:  
+<b>optional arguments: </b> 
   <b>-h, --help</b>            show this help message and exit  
   <b>-c {illumina,pacbio,nanopore}, --choice {illumina,pacbio,nanopore}</b>  
                         Choose a sequencing machine,illumina for short  
