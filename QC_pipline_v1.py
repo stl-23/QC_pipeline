@@ -14,14 +14,14 @@ def getConfig(section, key):
     return config.get(section, key)
 
 
-def remove_rRNA(sample, rRNA_out, rRNA_db, PE_SE='PE', hisat_p='', *samples):
+def remove_rRNA(sample, rRNA_out, rRNA_db, seq_type='PE', hisat_p='', *samples):
     outname = rRNA_out + sample + '.gz'
     out = ''
-    if PE_SE == 'PE':
+    if seq_type == 'PE':
         input1, input2 = samples[0], samples[1]
         out = 'hisat2 -x {} -1 {} -2 {} -S {}.sam --un-conc-gz {} {}'.format(rRNA_db, input1, input2, sample, outname,
                                                                              hisat_p)
-    elif PE_SE == 'SE':
+    elif seq_type == 'SE':
         input1 = samples[0]
         out = 'hisat2 -x {} -U {} -S {}.sam --un-gz {} {}'.format(rRNA_db, input1, sample, outname, hisat_p)
     return out
@@ -208,6 +208,8 @@ if __name__ == '__main__':
     nanopore = parser.add_argument_group(title='Long reads options (Nanopore)')
     nanopore.add_argument('-nanoplot_p', '--nanoplot_parameters', type=str, default='--plots hex dot pauvre kde',
                         help='The parameters for Nanoplot software')
+    nanopore.add_argument('-nanofilt_p', '--nanofilt_parameters', type=str, default=' -q 7 -l 1000 --headcrop 50 --tailcrop 50',
+                          help='The parameters for NanoFilt software')
     args = parser.parse_args()
     input_dir = args.inputs
     output_dir = args.outputs
@@ -222,6 +224,7 @@ if __name__ == '__main__':
     isoseq3_parameters = args.isoseq3_parameters
     lordec_correct_parameters = args.lordec_correct_parameters
     nanoplot_parameters = args.nanoplot_parameters
+    nanofilt_parameters = args.nanofilt_parameters
 
     correction_data_lst = os.listdir(correct_dir)
     seq_suffix = ['.fa','.fq','fa.gz','fq.gz','.fasta','fasta.gz','fastq','fastq.gz']
@@ -244,6 +247,7 @@ if __name__ == '__main__':
     lordec_correct = getConfig('QC', 'lordec_correct')
     lordec_trim = getConfig('QC', 'lordec_trim')
     nanoplot = getConfig('QC', 'nanoplot')
+    nanofilt = getConfig('QC','nanofilt')
     samtools = getConfig('QC', 'samtools')
     rRNA_data = getConfig('Database', 'rRNA')
     cal_subreads = getConfig('QCscripts', 'Cal_subreads')
@@ -251,7 +255,7 @@ if __name__ == '__main__':
     #### Main ####
     if platform_choice == 'illumina':
         samples, input1, input2, output1, output2, html, json = parse_short_read_dir(input_dir, output_dir,
-                                                                                     PE_SE=seq_type)
+                                                                                     seq_type)
         if omic_type == 'DNA':
             if seq_type == 'PE':
                 for sample, index in enumerate(samples):
@@ -338,7 +342,7 @@ if __name__ == '__main__':
                 lima_parameters = '--isoseq --no-pbi'
             if isoseq3_parameters == '':
                 isoseq3_parameters = ';--verbose;'
-                isoseq3_refine, isoseq3_cluster, isoseq3_polish = isoseq3_parameters.split(';')
+                isoseq3_refine, isoseq3_cluster, isoseq3_polish = isoseq3_parameters.strip().split(';')
             if mt_type == 'Sequel':
                 for sample, index in enumerate(samples):
                     out_file1 = """#!/usr/bin/bash
@@ -404,4 +408,4 @@ if __name__ == '__main__':
             {nanoplot} --fastq {AF}/{sample}.filtered.fastq.gz -o {AF} {nanoplot_p}
             """.format(nanoplot=nanoplot, input_sample=input_samples[index], BF=Before_filter, AF=After_filter,
                        sample=sample, nanofilt=nanofilt, nanoplot_p=nanoplot_parameters, nanofilt_p=nanofilt_p)
-            fw = open(sample+'.nanopore_qc.sh','w').write(outfile1)
+            fw = open(sample+'.nanopore_qc.sh', 'w').write(outfile1)
