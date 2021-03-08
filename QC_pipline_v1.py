@@ -2,13 +2,13 @@
 import os
 import sys
 import argparse
-import ConfigParser
+import configparser
 #import QC.Cal_subreads as Cal_subreads
 
 
 
 def getConfig(section, key):
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     path = os.path.abspath('./softwares.config')
     config.read(path)
     return config.get(section, key)
@@ -176,13 +176,15 @@ if __name__ == '__main__':
     python QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c pacbio -omic RNA -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G"
     python QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c nanopore -omic DNA -nanoplot_p "--plots hex dot pauvre kde"
     """
-    parser = argparse.ArgumentParser(description='QC pipline v1.0',epilog=examplelog)
-    general = parser.add_argument_group(title='Positional options',required=True)
+    parser = argparse.ArgumentParser(description='QC pipline v1.0', epilog=examplelog)
+    general = parser.add_argument_group(title='Positional options')
     general.add_argument('inputs', type=str,
                         help='The input directory(rawdata),the suffixes of short reads in the directory must be _1/2.fq or _1/2.fq.gz or _1/2.fastq or _1/2.fastq.gz;the suffixes of pacbio long reads must be .subreads.bam(Sequel platform) or .1.bax.h5,.2.bax.h5,.3.bax.h5(RS/RSII platform);the suffiexes of nanopore long reads must be .fastq.gz')
     general.add_argument('outputs', type=str,
                         help='The output directory(cleandata and report)')
-
+    general.add_argument("-h", "--help",
+                         action="help",
+                         help="show the help and exit")
     general.add_argument('-c', '--choice', type=str, default='illumina', choices=['illumina', 'pacbio', 'nanopore'],
                         help='Choose a sequencing machine,illumina for short reads,pacbio and nanopore for long reads,default is illumina')
     general.add_argument('-omic', '--omic_type', type=str, default='DNA',
