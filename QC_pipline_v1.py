@@ -27,7 +27,7 @@ def remove_rRNA(sample, rRNA_out, rRNA_db, PE_SE='PE', hisat_p='', *samples):
     return out
 
 
-def parse_short_read_dir(inputs, outs, PE_SE='PE'):
+def parse_short_read_dir(inputs, outs, seq_type='PE'):
     input_path = os.path.abspath(inputs) + '/'
     out_path = os.path.abspath(outs) + '/'
     lst = os.listdir(input_path)
@@ -44,7 +44,7 @@ def parse_short_read_dir(inputs, outs, PE_SE='PE'):
     except Exception:
         print("No such file or directory or wrong file format,must be .fq/.fq.gz/.fastq/.fastq.gz")
         exit()
-    if PE_SE == 'PE':
+    if seq_type == 'PE':
         if lst[0].endswith('.fq.gz'):
             samples = [i.replace('_1.fq.gz', '').replace('_2.fq.gz', '') for i in lst]
             samples = sorted(samples)
@@ -85,7 +85,7 @@ def parse_short_read_dir(inputs, outs, PE_SE='PE'):
                 output2.append(out_path + sample + '_2.clean.fq.gz')
                 html.append(out_path + sample + '.html')
                 json.append(out_path + sample + '.json')
-    elif sys.argv[3] == 'SE':
+    elif seq_type == 'SE':
         if lst[0].endswith('.fq.gz'):
             samples = [i.replace('.fq.gz') for i in lst]
             samples = sorted(samples)
@@ -126,7 +126,7 @@ def parse_short_read_dir(inputs, outs, PE_SE='PE'):
 #    out = '{lima} {raw_bam} {barcode} --split-bam'.format(lima=lima,raw_bam=raw_bam,barcode=barcode_file)
 #    return out
 
-def parse_pacbio_read_dir(inputs, outs, seq_type='Sequel'):
+def parse_pacbio_read_dir(inputs, outs, mt_type='Sequel'):
     input_path = os.path.abspath(inputs) + '/'
     out_path = os.path.abspath(outs) + '/'
     lst = os.listdir(input_path)
@@ -141,13 +141,13 @@ def parse_pacbio_read_dir(inputs, outs, seq_type='Sequel'):
     except Exception:
         print("No such file or directory or wrong file format,must be .subreads.bam/.1/2/3.bax.h5")
         exit()
-    if seq_type == 'Sequel':
+    if mt_type == 'Sequel':
         samples = [i.replace('.subreads.bam') for i in lst if i.endswith('.subreads.bam')]  # or .subreadset.xml
         samples = sorted(samples)
         for sample in samples:
             input1.append(input_path + sample)
             output1.append(out_path + sample)
-    elif seq_type == 'RS':
+    elif mt_type == 'RS':
         samples = [i.replace('.1.bax.h5','').replace('.2.bax.h5','').replace('.3.bax.h5','') for i in lst if i.endswith('.bax.h5')]  ## one bas.h5 file and three bax.h5 files in each sample run
         samples = sorted(samples)
         for sample in samples:
@@ -215,6 +215,7 @@ if __name__ == '__main__':
     correct_dir = args.correction
     seq_type = args.seq_type
     omic_type = args.omic_type
+    mt_type = args.machine_type
     fastp_parameters = args.fastp_parameters
     ccs_parameters = args.ccs_parameters
     lima_parameters = args.lima_parameters
@@ -288,7 +289,7 @@ if __name__ == '__main__':
         if omic_type == 'DNA':
             if lordec_correct_parameters == '':
                 lordec_correct_parameters = '-k 19 -s 3'
-            if seq_type == 'Sequel':
+            if mt_type == 'Sequel':
                 for sample, index in enumerate(samples):
                     out_file1 = """#!/usr/bin/bash
                     {samtools} stats {input1}.subreads.bam > {output1}.stat.tmp
@@ -308,7 +309,7 @@ if __name__ == '__main__':
                                    output1=output1[index], lordec_p=lordec_correct_parameters)
 
                     fw = open(sample+'.Sequel_DNA.sh', 'w').write(out_file1+'\n'+out_file2)
-            elif seq_type == 'RS':
+            elif mt_type == 'RS':
                 for sample, index in enumerate(samples):
                     input_1, input_2, input_3 = input_path + sample + '.1.bax.h5', input_path + sample + '.2.bax.h5', input_path + sample + '.3.bax.h5'
                     out_file1 = """#!/usr/bin/bash
@@ -338,7 +339,7 @@ if __name__ == '__main__':
             if isoseq3_parameters == '':
                 isoseq3_parameters = ';--verbose;'
                 isoseq3_refine, isoseq3_cluster, isoseq3_polish = isoseq3_parameters.split(';')
-            if seq_type == 'Sequel':
+            if mt_type == 'Sequel':
                 for sample, index in enumerate(samples):
                     out_file1 = """#!/usr/bin/bash
                     {samtools} stats {input1}.subreads.bam > {output1}.stat.tmp
@@ -363,7 +364,7 @@ if __name__ == '__main__':
                                     """.format(lordec_correct=lordec_correct, lordec_trim=lordec_trim,correct_data=correct_data,
                                                 output1=output1[index], lordec_p=lordec_correct_parameters)
                     fw = open(sample+'.Sequel_RNA.sh', 'w').write(out_file1 + '\n' + out_file2)
-            elif seq_type == 'RS':
+            elif mt_type == 'RS':
                 for sample, index in enumerate(samples):
                     input_1, input_2, input_3 = input_path + sample + '.1.bax.h5', input_path + sample + '.2.bax.h5', input_path + sample + '.3.bax.h5'
                     out_file1 = """#!/usr/bin/bash
