@@ -2,7 +2,7 @@
 import os
 import argparse
 import configparser
-import time
+#import time
 #import QC.Cal_subreads as Cal_subreads
 
 
