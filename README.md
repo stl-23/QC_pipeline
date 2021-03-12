@@ -35,7 +35,7 @@ Long reads options (Pacbio):
   -mt MACHINE_TYPE, --machine_type MACHINE_TYPE
                         The sequencing platform:Sequel/RS,default is Sequel
   -cr {no,yes}, --correction {no,yes}
-                        Use illumina data to correct the pacbio long reads or not, default is no;if yes, please upload illumina reads       with the pacbio long reads in the same directory and have a format of {same_name_as_pacbio_subreads}.xx.fq.gz                             (used in CLR mode,the self-correction is enough for CCS mode in normal condition)
+                        Use illumina data to correct the pacbio long reads or not, default is no;if yes, please upload illumina reads with the pacbio long reads in the same directory and have a format of {same_name_as_pacbio_subreads}.xx.fq.gz (used in CLR mode,the self-correction is enough for CCS mode in normal condition)
   -ccs_p CCS_PARAMETERS, --ccs_parameters CCS_PARAMETERS
                         The parameters for SMRTlinks ccs tools,defalut parameters in DNA,"-noPolish --minPasses 1" in RNA
   -lima_p LIMA_PARAMETERS, --lima_parameters LIMA_PARAMETERS
