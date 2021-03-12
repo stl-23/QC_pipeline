@@ -1,5 +1,5 @@
 # QC_piplinev1.0
-The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/RSII/Sequel/Sequel II),Nanopore platform
+The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
 
 ```
 usage: QC_pipline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,pacbio,nanopore}] [-omic OMIC_TYPE] [-s SEQ_TYPE] [-fastp_p FASTP_PARAMETERS] [-mt MACHINE_TYPE]
@@ -7,9 +7,12 @@ usage: QC_pipline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,p
                         [-nanoplot_p NANOPLOT_PARAMETERS] [-nanofilt_p NANOFILT_PARAMETERS]
 
 EXAMPLES: 
-python3 QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c illumina -omic DNA -s PE -fastp_p "-w 1" 
-python3 QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c pacbio -omic RNA -mt Sequel -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G" 
-python3 QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c nanopore -omic DNA -nanoplot_p "--plots hex dot " -nanofilt_p "-q 7 -l 1000 --headcrop 50 --tailcrop 50"
+python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ 
+-c illumina -omic DNA -s PE -fastp_p "-w 1" 
+python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/
+-c pacbio -omic RNA -mt Sequel -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G" 
+python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ 
+-c nanopore -omic DNA -nanoplot_p "--plots hex dot " -nanofilt_p "-q 7 -l 1000 --headcrop 50 --tailcrop 50"
 
 General options:
   -inputs INPUTS        The input directory(rawdata),the suffixes of short reads in the directory must be _1/2.fq or _1/2.fq.gz or                               _1/2.fastq or _1/2.fastq.gz;the suffixes of pacbio
