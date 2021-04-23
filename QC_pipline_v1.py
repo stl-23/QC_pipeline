@@ -2,7 +2,6 @@
 import os
 import argparse
 import configparser
-#import time
 #import QC.Cal_subreads as Cal_subreads
 
 
@@ -33,96 +32,38 @@ def remove_rRNA(sample, output_dir, rRNA_db, seq_type='PE', hisat_p='', *samples
 
 
 def parse_short_read_dir(inputs, outs, seq_type='PE'):
-    input_path = os.path.abspath(inputs) + '/'
-    out_path = os.path.abspath(outs) + '/'
+    input_path = os.path.abspath(inputs)
+    out_path = os.path.abspath(outs)
     lst = os.listdir(input_path)
-    samples = []
-    input1 = []
-    input2 = []
-    output1 = []
-    output2 = []
-    html = []
-    json = []
-    seq_suffix = ['.fq', '.fq.gz', '.fastq', '.fastq.gz']
-    lst = [file for file in lst for suffix in seq_suffix if file.endswith(suffix)]
-    if not lst:
-        print("No such file or directory or wrong file format,must be .fq/.fq.gz/.fastq/.fastq.gz")
-        exit()
-    if seq_type == 'PE':
-        if lst[0].endswith('.fq.gz'):
-            samples = [i.replace('_1.fq.gz', '').replace('_2.fq.gz', '') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fq.gz')
-                input2.append(input_path + sample + '_2.fq.gz')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                output2.append(out_path + sample + '_2.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fq'):
-            samples = [i.replace('_1.fq', '').replace('_2.fq', '') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fq')
-                input2.append(input_path + sample + '_2.fq')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                output2.append(out_path + sample + '_2.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fastq.gz'):
-            samples = [i.replace('_1.fastq.gz', '').replace('_2.fastq.gz', '') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fastq.gz')
-                input2.append(input_path + sample + '_2.fastq.gz')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                output2.append(out_path + sample + '_2.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fastq'):
-            samples = [i.replace('_1.fastq', '').replace('_2.fastq', '') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fastq')
-                input2.append(input_path + sample + '_2.fastq')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                output2.append(out_path + sample + '_2.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-    elif seq_type == 'SE':
-        if lst[0].endswith('.fq.gz'):
-            samples = [i.replace('.fq.gz','') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fq.gz')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fq'):
-            samples = [i.replace('.fq','') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fq')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fastq.gz'):
-            samples = [i.replace('.fastq.gz','') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fastq.gz')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-        elif lst[0].endswith('.fastq'):
-            samples = [i.replace('.fastq','') for i in lst]
-            samples = set(samples)
-            for sample in samples:
-                input1.append(input_path + sample + '_1.fastq')
-                output1.append(out_path + sample + '_1.clean.fq.gz')
-                html.append(out_path + sample + '.html')
-                json.append(out_path + sample + '.json')
-    return samples, input1, input2, output1, output2, html, json
+    dic = {}
+    seq_suffix = [seq + zz for seq in ['.fq', '.fastq'] for zz in ['', '.gz', '.bz2']]
+    lst = [file for file in lst for s in seq_suffix if file.endswith(s)]
+    try:
+        if lst:
+            samples = [i.split('_1')[0] for i in lst]
+            suffix = [i.split('_1')[-1] for i in lst]
+    except IOError:
+        print('No such file or directory or wrong file format(e.q. sample_1.fq.gz)')
+    finally:
+        samples = []
+        suffix = []
+    if samples:
+        if seq_type == 'PE':
+            for index, sample in enumerate(samples):
+                dic[sample] = [os.path.join(input_path,sample,'_1',suffix[index]),
+                               os.path.join(input_path,sample,'_2',suffix[index]),
+                               os.path.join(out_path,sample,'_1',suffix[index]),
+                               os.path.join(out_path,sample,'_2',suffix[index]),
+                               os.path.join(out_path,sample,'.html'),
+                               os.path.join(out_path,sample,'.json')]
+        elif seq_type == 'SE':
+            for index, sample in enumerate(samples):
+                dic[sample] = [os.path.join(input_path,sample,'_1',suffix[index]),
+                               os.path.join(out_path,sample,'_1',suffix[index]),
+                               os.path.join(out_path,sample,'.html'),
+                               os.path.join(out_path,sample,'.json')]
+
+    return dic
 
 #def barcode_bam(raw_bam, barcode_file,lima):   ### https://www.biostars.org/p/349068/
 #    fw = open('demultplexing.sh', 'w')
@@ -175,9 +116,9 @@ def parse_nanopore_read_dir(inputs, outs):
 if __name__ == '__main__':
     #### Parse arguments ####
     examplelog="""EXAMPLES:
-    python QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c illumina -omic DNA -s PE -fastp_p "-w 3"
-    python QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c pacbio -omic RNA -mt Sequel -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G"
-    python QC_pipline_v1.py /root/my_data/example_inputs/ /root/my_data/example_outputs/ -c nanopore -omic DNA -nanoplot_p "--plots hex dot pauvre kde"
+    python QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ -c illumina -omic DNA -s PE -fastp_p "-w 3"
+    python QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ -c pacbio -omic RNA -mt Sequel -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G"
+    python QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ -c nanopore -omic DNA -nanoplot_p "--plots hex dot pauvre kde"
     """
     parser = argparse.ArgumentParser(description='QC pipline v1.0', epilog=examplelog, add_help=False)
     general = parser.add_argument_group(title='General options')
@@ -195,12 +136,12 @@ if __name__ == '__main__':
     illumina.add_argument('-s', '--seq_type', type=str, default='PE',
                         help='Paired end(PE) or singe end(SE) short reads in illumina sequencing platform,default is PE')
     illumina.add_argument('-fastp_p', '--fastp_parameters', type=str,default='',
-                        help='The parameters for fastp softwares,e.g: -fastp_p "-w 1", the parameters:--html and --json are defaultly set and named by the samples names to avoid overlapping in this pipline,please do not set again')
+                        help='The parameters for fastp softwares,e.g: -fastp_p "-g -x -5 -3", the parameters:--html and --json are defaultly set and named by the samples names to avoid overlapping in this pipline,please do not set again')
     pacbio = parser.add_argument_group(title='Long reads options (Pacbio)')
     pacbio.add_argument('-mt', '--machine_type', type=str,default='Sequel',
                         help='The sequencing platform:Sequel/RS,default is Sequel')
     pacbio.add_argument('-cr', '--correction', type=str, default='no', choices=['no', 'yes'],
-                        help='Choose illumina short reads for pacbio long reads correction or not (used in CLR mode,the self-correction is enough for CCS mode in normal condition),FASTA/Q file(s),default is false')
+                        help='Use illumina data to correct the pacbio long reads or not, default is no;if yes, please upload illumina reads with the pacbio long reads in the same directory and have a format of {same_name_as_pacbio_subreads}.xx.fq.gz (used in CLR mode,the self-correction is enough for CCS mode in normal condition)')
     pacbio.add_argument('-ccs_p', '--ccs_parameters', type=str, default='',
                         help='The parameters for SMRTlinks ccs tools,defalut parameters in DNA,"-noPolish --minPasses 1" in RNA')
     pacbio.add_argument('-lima_p', '--lima_parameters', type=str, default='',
@@ -258,41 +199,40 @@ if __name__ == '__main__':
     #read_distributon_hist = getConfig('Report','read_distributon_hist')
     #scripts_dir = os.path.abspath(os.path.dirname(__file__))+'/tmp_' + time.strftime("%Y-%m-%d_%H:%M:%S", time.localtime())
     #os.system('mkdir -p {}'.format(scripts_dir))
-    rRNA_data = '/obs/gene-container-qc-test/database/rRNA/rRNAs'
+    #rRNA_data = '/obs/gene-container-qc-test/database/rRNA/rRNAs'
+    rRNA_data = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))+'/database/rRNA/rRNAs'
     cal_subreads = os.path.abspath(os.path.dirname(__file__))+'/Cal_subreads.py'
     read_distributon_hist = os.path.abspath(os.path.dirname(__file__))+'/read_distributon_hist.R'
     #### Main ####
     if platform_choice == 'illumina':
-        samples, input1, input2, output1, output2, html, json = parse_short_read_dir(input_dir, output_dir,
-                                                                                     seq_type)
+        dic = parse_short_read_dir(input_dir, output_dir, seq_type)
         if omic_type == 'DNA':
             if seq_type == 'PE':
-                for index, sample in enumerate(samples):
+                for sample, path in dic.items():
                     fw = open(sample + '.sh', 'w').write(
-                        '{} -i {} -I {} -o {} -O {} --html {} --json {} {}'.format(fastp, input1[index], input2[index],
-                                                                                   output1[index], output2[index],
-                                                                                   html[index], json[index],
+                        '{} -i {} -I {} -o {} -O {} --html {} --json {} {}'.format(fastp, path[0], path[1],
+                                                                                   path[2], path[3],
+                                                                                   path[4], path[5],
                                                                                    fastp_parameters))
             elif seq_type == 'SE':
-                for index, sample in enumerate(samples):
+                for sample, path in dic.items():
                     fw = open(sample + '.sh', 'w').write(
-                        '{} -i {} -o {} --html {} --json {} {}'.format(fastp, input1[index], output1[index],
-                                                                       html[index], json[index], fastp_parameters))
+                        '{} -i {} -o {} --html {} --json {} {}'.format(fastp, path[0], path[2],
+                                                                       path[4], path[5], fastp_parameters))
         elif omic_type == 'RNA':  ## remove rRNA first
             rm_rRNA_seq1 = []
             rm_rRNA_seq2 = []
             if seq_type == 'PE':
                 for index, sample in enumerate(samples):
-                    #os.system('mkdir -p {}/rm_rRNA_dir/{}'.format(output_dir,sample))
-                    #tmp_dir = output_dir + '/rm_rRNA_dir/'+sample
-                    rm_rRNA_seq1.append(output_dir + '/rm_rRNA_dir/'+sample+'/'+sample+'.1.rm.fq.gz')
-                    rm_rRNA_seq2.append(output_dir + '/rm_rRNA_dir/'+sample+'/'+sample+'.2.rm.fq.gz')
+
+                    rm_rRNA_seq1.append(output_dir + '/rm_rRNA_dir/'+sample+'.1.rm.fq.gz')
+                    rm_rRNA_seq2.append(output_dir + '/rm_rRNA_dir/'+sample+'.2.rm.fq.gz')
                     out_file1 = remove_rRNA(sample, output_dir, rRNA_data, seq_type, '', input1[index], input2[index])
                     out_file2 = '{} -i {} -I {} -o {} -O {} --html {} --json {} {}'.format(fastp, rm_rRNA_seq1[index],
                                                                                            rm_rRNA_seq2[index],
-                                                                                           output1[index],
-                                                                                           output2[index], html[index],
-                                                                                           json[index], fastp_parameters)
+                                                                                           path[2],path[3],
+                                                                                           path[4], path[5],
+                                                                                           fastp_parameters)
                     fw = open(sample + '.sh', 'w').write(out_file1 + '\n' + out_file2)
             elif seq_type == 'SE':
                 for index, sample in enumerate(samples):
@@ -300,8 +240,8 @@ if __name__ == '__main__':
                     #tmp_dir = output_dir + '/rm_rRNA_dir/' + sample
                     rm_rRNA_seq1.append(output_dir + '/rm_rRNA_dir/' + sample + '/' + sample + '.rm.fq.gz')
                     out_file1 = remove_rRNA(sample, output_dir, rRNA_data, seq_type, '', input1[index])
-                    out_file2 = '{} -i {} -o {} --html {} --json {} {}'.format(fastp, rm_rRNA_seq1[index], output1[index],
-                                                                               html[index], json[index],
+                    out_file2 = '{} -i {} -o {} --html {} --json {} {}'.format(fastp, rm_rRNA_seq1[index], path[2],
+                                                                               path[4], path[5],
                                                                                fastp_parameters)
                     fw = open(sample + '.sh', 'w').write(out_file1 + '\n' + out_file2)
     elif platform_choice == 'pacbio':
@@ -318,7 +258,7 @@ if __name__ == '__main__':
 python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
 Rscript {read_distributon_hist} {output1}.stat.list {output1}
 {ccs} {input1}.subreads.bam {output1}.ccs.bam {ccs_p}
-{bam2fasta} {output1}.ccs.bam {output1}.pacbio.fasta
+{bam2fasta} {output1}.ccs.bam {output1}.pacbio
 """.format(samtools=samtools,input1=input1[index],Cal_subreads=cal_subreads,output1=output1[index],
             read_distributon_hist=read_distributon_hist,ccs=ccs,ccs_p=ccs_parameters,
             bam2fasta=bam2fasta)
@@ -328,7 +268,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
                         if correct_data_lst:
                                 correct_data_lst_tmp = [file for file in correct_data_lst if file.startswith(input1[index])]
                                 correct_data = ','.join(correct_data_lst_tmp)
-                                out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta -o {output1}.corrected.fasta {lordec_p}
+                                out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta.gz -o {output1}.corrected.fasta {lordec_p}
 {lordec_trim} -i {output1}.corrected.fasta -o {output1}.corrected.trimed.fasta
 """.format(lordec_correct=lordec_correct, lordec_trim=lordec_trim,correct_data=correct_data,
             output1=output1[index], lordec_p=lordec_correct_parameters)
@@ -346,7 +286,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
 python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
 Rscript {read_distributon_hist} {output1}.stat.list {output1}
 {ccs} {input1}.subreads.bam {output1}.ccs.bam {ccs_p}
-{bam2fasta} {output1}.ccs.bam {output1}.pacbio.fasta
+{bam2fasta} {output1}.ccs.bam {output1}.pacbio
 """.format(bax2bam=bax2bam, input_1=input_1, input_2=input_2, input_3=input_3, sample=sample, output_dir=output_dir,
             samtools = samtools, input1 = input1[index], Cal_subreads = cal_subreads, output1 = output1[index],
             read_distributon_hist = read_distributon_hist, ccs = ccs, ccs_p = ccs_parameters,
@@ -357,7 +297,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
                         if correct_data_lst:
                             correct_data_lst_tmp = [file for file in correct_data_lst if file.startswith(input_dir+sample)]
                             correct_data = ','.join(correct_data_lst_tmp)
-                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta -o {output1}.corrected.fasta {lordec_p}
+                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta.gz -o {output1}.corrected.fasta {lordec_p}
 {lordec_trim} -i {output1}.corrected.fasta -o {output1}.corrected.trimed.fasta
 """.format(lordec_correct=lordec_correct, lordec_trim=lordec_trim, correct_data=correct_data,
             output1=output1[index], lordec_p=lordec_correct_parameters)
@@ -395,7 +335,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
 {isoseq3} refine {output1}.demux.primer_5p--primer_3p.bam primers.fasta {output1}.flnc.bam {isoseq3_refine}
 {isoseq3} cluster {output1}.flnc.bam {output1}.unpolished.bam {isoseq3_cluster}
 {isoseq3} polish {output1}.unpolished.bam {input1} {output1}.polished.bam {isoseq3_polish}
-{bam2fasta} {output1}.polished.bam {output1}.pacbio.fasta
+{bam2fasta} {output1}.polished.bam {output1}.pacbio
 """.format(samtools=samtools,input1=input1[index],Cal_subreads=cal_subreads,output1=output1[index],
             read_distributon_hist=read_distributon_hist,ccs=ccs, ccs_p=ccs_parameters, lima=lima,
             lima_p=lima_parameters, isoseq3=isoseq3, isoseq3_refine=isoseq3_refine,
@@ -406,7 +346,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
                         if correct_data_lst:
                             correct_data_lst_tmp = [file for file in correct_data_lst if file.startswith(input1[index])]
                             correct_data = ','.join(correct_data_lst_tmp)
-                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta -o {output1}.corrected.fasta {lordec_p}
+                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta.gz -o {output1}.corrected.fasta {lordec_p}
 {lordec_trim} -i {output1}.corrected.fasta -o {output1}.corrected.trimed.fasta
 """.format(lordec_correct=lordec_correct, lordec_trim=lordec_trim,correct_data=correct_data,
             output1=output1[index], lordec_p=lordec_correct_parameters)
@@ -428,7 +368,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
 {isoseq3} refine {output1}.demux.primer_5p--primer_3p.bam primers.fasta {output1}.flnc.bam {isoseq3_refine}
 {isoseq3} cluster {output1}.flnc.bam {output1}.unpolished.bam {isoseq3_cluster}
 {isoseq3} polish {output1}.unpolished.bam {input1} {output1}.polished.bam {isoseq3_polish}
-{bam2fasta} {output1}.polished.bam {output1}.pacbio.fasta
+{bam2fasta} {output1}.polished.bam {output1}.pacbio
 """.format(bax2bam=bax2bam, input_1=input_1, input_2=input_2, input_3=input_3, sample=sample, output_dir=output_dir,
             samtools = samtools, input1 = input1[index], Cal_subreads = cal_subreads, output1 = output1[index],
             read_distributon_hist = read_distributon_hist, ccs = ccs, ccs_p = ccs_parameters, lima=lima,
@@ -441,7 +381,7 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
                             correct_data_lst_tmp = [file for file in correct_data_lst if file.startswith(input_dir+sample)]
                             print(correct_data_lst_tmp)
                             correct_data = ','.join(correct_data_lst_tmp)
-                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta -o {output1}.corrected.fasta {lordec_p}
+                            out_file2 = """{lordec_correct} -2 {correct_data} -i {output1}.pacbio.fasta.gz -o {output1}.corrected.fasta {lordec_p}
 {lordec_trim} -i {output1}.corrected.fasta -o {output1}.corrected.trimed.fasta
 """.format(lordec_correct=lordec_correct, lordec_trim=lordec_trim,correct_data=correct_data,
             output1=output1[index], lordec_p=lordec_correct_parameters)
@@ -456,10 +396,10 @@ Rscript {read_distributon_hist} {output1}.stat.list {output1}
         After_filter = output_dir+'After_filter'
         if omic_type == 'DNA' or omic_type == 'RNA':
             for index, sample in enumerate(samples):
-                outfile1 = """mkdir -p {output_dir}/{BF} {output_dir}/{AF}
-{nanoplot} --fastq {input_sample} -o {BF} {nanoplot_p}
-gunzip -c {input_sample} | {nanofilt} {nanofilt_p} |gzip > {AF}/{sample}.filtered.fastq.gz
-{nanoplot} --fastq {AF}/{sample}.filtered.fastq.gz -o {AF} {nanoplot_p}
+                outfile1 = """mkdir -p {BF}/{sample} {AF}/{sample}
+{nanoplot} --fastq {input_sample} -o {BF}/{sample} {nanoplot_p}
+gunzip -c {input_sample} | {nanofilt} {nanofilt_p} |gzip > {AF}/{sample}/{sample}.filtered.fastq.gz
+{nanoplot} --fastq {AF}/{sample}/{sample}.filtered.fastq.gz -o {AF}/{sample} {nanoplot_p}
 """.format(nanoplot=nanoplot, input_sample=input_samples[index], BF=Before_filter, AF=After_filter,output_dir=output_dir,
             sample=sample, nanofilt=nanofilt, nanoplot_p=nanoplot_parameters, nanofilt_p=nanofilt_parameters)
                 fw = open(sample+'.nanopore_qc.sh', 'w').write(outfile1)
