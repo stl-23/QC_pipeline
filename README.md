@@ -1,5 +1,5 @@
 # QC_piplinev1.0
-The quality control pipline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
+The quality control pipeline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
 
 ```
 usage: QC_pipline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,pacbio,nanopore}] [-omic OMIC_TYPE] [-s SEQ_TYPE] [-fastp_p FASTP_PARAMETERS] [-mt MACHINE_TYPE]
@@ -28,7 +28,7 @@ Short reads options (illumina):
   -s SEQ_TYPE, --seq_type SEQ_TYPE
                         Paired end(PE) or singe end(SE) short reads in illumina sequencing platform,default is PE
   -fastp_p FASTP_PARAMETERS, --fastp_parameters FASTP_PARAMETERS
-                        The parameters for fastp softwares,e.g: -fastp_p "-w 1", the parameters:--html and --json are defaultly set and named by the samples names to avoid
+                        The parameters for fastp softwares,e.g: -fastp_p "-q 20 -u 50", the parameters:--html and --json are defaultly set and named by the samples names to avoid
                         overlapping in this pipline,please do not set again
 
 Long reads options (Pacbio):
