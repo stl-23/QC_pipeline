@@ -1,0 +1,506 @@
+version: genecontainer_0_1
+workflow:
+  step1-choose-platform:
+    tool: 'busybox:latest'
+    type: GCS.Job
+    resources:
+      memory: 1g
+      cpu: 0.25c
+    commands:
+      - 'echo -n choose ${choice} platform'
+    metadata:
+      Designer:
+        id: 4fbbaa6e-df0e-4e92-b92f-757217f6e3aa
+  illumina-parameters:
+    tool: 'busybox:latest'
+    type: GCS.Job
+    condition: 'check_result(step1-choose-platform, "choose illumina platform")'
+    resources:
+      memory: 1g
+      cpu: 0.25c
+    commands:
+      - 'echo -n choose ${omic_type} and ${seq_type}'
+    metadata:
+      Designer:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+    depends:
+      - target: step1-choose-platform
+        type: whole
+  pacbio-parameters:
+    tool: 'busybox:latest'
+    type: GCS.Job
+    condition: 'check_result(step1-choose-platform, "choose pacbio platform")'
+    resources:
+      memory: 1g
+      cpu: 0.25c
+    commands:
+      - 'echo -n choose ${omic_type}'
+    metadata:
+      Designer:
+        id: 6ac0f336-73c8-4e2c-becb-03e75c75e94b
+    depends:
+      - target: step1-choose-platform
+        type: whole
+  nanopore-parameters:
+    tool: 'busybox:latest'
+    type: GCS.Job
+    condition: 'check_result(step1-choose-platform, "choose nanopore platform")'
+    resources:
+      memory: 1g
+      cpu: 0.25c
+    commands:
+      - 'echo -n choose ${omic_type}'
+    metadata:
+      Designer:
+        id: a7be2b6b-e3e9-4fd6-a556-5db516e86d49
+    depends:
+      - target: step1-choose-platform
+        type: whole
+  pb-dna:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(pacbio-parameters, "choose DNA")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - >-
+        source ~/.bashrc && /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/pb_DNA/ -c pacbio -omic DNA -mt ${machine_type} -cr ${cr} -ccp_p ${ccp_parameters} 
+        -lordec_p ${lordec_correct_parameters}  && for i in *.sh;do sh $i;done
+    metadata:
+      Designer:
+        id: 50774c57-7ea8-4fdc-a749-1c5d04ffed79
+    depends:
+      - target: pacbio-parameters
+        type: whole
+  pb-rna:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(pacbio-parameters, "choose RNA")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - >-
+        source ~/.bashrc; /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/pb_RNA/ -c pacbio -omic RNA -cr ${cr} -ccp_p ${ccp_parameters} -lima_p ${lima_parameters} -isoseq3_p
+        ${isoseq3_parameters} -lordec_p ${lordec_correct_parameters} -mt ${machine_type} && for i in *.sh;do sh $i;done
+    metadata:
+      Designer:
+        id: 187b66e4-6a23-45f7-98d7-09d3e0a4e119
+    depends:
+      - target: pacbio-parameters
+        type: whole
+  illumina-dna-pe:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(illumina-parameters, "choose DNA and PE")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - 'source ~/.bashrc; /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/illumina_DNA_PE/ -c illumina -omic DNA -s PE -fastp_p ${fastp_parameters} && for i in *.sh;do sh $i;done'
+    metadata:
+      Designer:
+        id: a93e977a-40d3-474b-9dc1-31d93d124774
+    depends:
+      - target: illumina-parameters
+        type: whole
+  illumina-dna-se:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(illumina-parameters, "choose DNA and SE")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - 'source ~/.bashrc && /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/illumina_DNA_SE -c illumina -omic DNA -s SE -fastp_p ${fastp_parameters} && for i *.sh;do sh $i;done'
+    metadata:
+      Designer:
+        id: 77ed50c1-6c5d-47e5-8da4-788cc278c275
+    depends:
+      - target: illumina-parameters
+        type: whole
+  illumina-rna-pe:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(illumina-parameters, "choose RNA and PE")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - 'source ~/.bashrc && /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/illumina_RNA_PE/ -c illumina -omic RNA -s PE -fastp_p ${fastp_parameters} && for i in *.sh;do sh $i;done'
+    metadata:
+      Designer:
+        id: f259b8e4-e1b3-45af-a03a-636858e474c1
+    depends:
+      - target: illumina-parameters
+        type: whole
+  illumina-rna-se:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(illumina-parameters, "choose RNA and SE")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - 'source ~/.bashrc && /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/illumina_RNA_SE -c illumina -omic RNA -s SE -fastp_p ${fastp_parameters} && for i in *.sh;do sh $i;done'
+    metadata:
+      Designer:
+        id: bedb4bc6-5a1c-4f22-a026-a1e7b751f6ae
+    depends:
+      - target: illumina-parameters
+        type: whole
+  ont-dna:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(nanopore-parameters, "choose DNA")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - >-
+        source ~/.bashrc; /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/ont_DNA/ -c nanopore -omic DNA -nanoplot_p ${nanoplot_parameters} -nanofilt_p ${nanofilt_parameters} &&
+        for i in *.sh;do sh $i;done
+    metadata:
+      Designer:
+        id: db04247c-6ee5-4836-b980-9ce8ec40186a
+    depends:
+      - target: nanopore-parameters
+        type: whole
+  ont-rna:
+    tool: 'qc:v1.6'
+    type: GCS.Job
+    condition: 'check_result(nanopore-parameters, "choose RNA")'
+    resources:
+      memory: 8g
+      cpu: 4c
+    commands:
+      - >-
+        source ~/.bashrc; /tool/Python-3.8.2/python /obs/gene-container-qc-test/scripts/QC_pipline_v1.py -inputs /obs/gene-container-qc-test/rawdata/ -outputs /obs/gene-container-qc-test/result/ -c nanopore -omic RNA -nanoplot_p ${nanoplot_parameters} -nanofilt_p ${nanofilt_parameters}&& for i in
+        *.sh;do sh $i;done
+    metadata:
+      Designer:
+        id: d0bdae40-ee7d-43cf-bece-42e89287d0fc
+    depends:
+      - target: nanopore-parameters
+        type: whole
+volumes:
+  obs:
+    mount_path: '/obs/gene-container-qc-test/'
+    mount_from:
+      pvc: gene-pvc-gene-container-qc-test
+  sfs:
+    mount_path: '/sfs/'
+    mount_from:
+      pvc: '${GCS_SFS_PVC}'
+outputs:
+  results:
+    path:
+      - '/obs/gene-container-qc-test/result'
+inputs:
+  choice:
+    type: string
+    default: illumina
+    description: 'Choose a sequencing machine: "illumina" for short reads,"pacbio" and "nanopore" for long reads,default is illumina'
+  omic_type:
+    type: string
+    default: DNA
+    description: 'The omics type:DNA(genome) or RNA(transciptome),default is DNA'
+  seq_type:
+    type: string
+    label: illumina
+    default: PE
+    description: 'Paired end(PE) or singe end(SE) short reads in illumina sequencing platform,default is PE'
+  fastp_parameters:
+    type: string
+    label: illumina
+    default: '"-q 20 -u 50"'
+    description: 'The parameters for fastp softwares,e.g: -fastp_p "-q 20 -u 50", the parameters:--html and --json are defaultly set and named by the samples names to avoid overlapping in this pipline,please do not set again'
+  machine_type:
+    type: string
+    label: pacbio
+    default: Sequel
+    description: 'The sequencing platform in Pacbio,including of Sequel/RS,default is Sequel'
+  correction:
+    type: string
+    label: pacbio
+    default: 'no'
+    description: 'Use illumina data to correct the pacbio long reads or not, default is no;if yes, please upload illumina reads with the pacbio long reads in the same directory and have a format of {same_name_as_pacbio_subreads}.xx.fq.gz'
+  ccs_parameters:
+    type: string
+    label: pacbio
+    description: 'The parameters for SMRTlinks ccs tools,"--min-length 50" in DNA,"-noPolish --minPasses 1" in RNA'
+  lima_parameters:
+    type: string
+    label: pacbio
+    description: 'The parameters for SMRTlinks lima tools,default parameters in DNA,"--isoseq --no-pbi" in RNA'
+  isoseq3_parameters:
+    type: string
+    label: pacbio
+    description: 'The parameters for SMRTlinks isoseq3 tools(refine/cluster/polish),seperated by semicolon,e.g. -isoseq3_p "-j 1;--verbose;-r 0.99",default is ";--verbose;"'
+  lordec_correct_parameters:
+    type: string
+    label: pacbio
+    description: 'The parameters for lordec_correct tools,"-k 19 -s 3" in DNA,default parameters in RNA'
+  nanoplot_parameters:
+    type: string
+    label: nanopore
+    default: '"--plots hex dot"'
+    description: 'The parameters for Nanoplot software,default is "--plots hex dot pauvre kde"'
+  nanofilt_parameters:
+    type: string
+    label: nanopore
+    default: '"-q 7 -l 1000 --headcrop 50 --tailcrop 50"'
+    description: The parameters for NanoFilt software
+metadata:
+  relationships:
+    fe252ef3-e5fd-4fe9-ad98-97cd23e998b9:
+      references:
+        depends:
+          - target: step1-choose-platform
+            type: whole
+        relateto:
+          - illumina-dna-pe
+          - illumina-dna-se
+          - illumina-rna-pe
+          - illumina-rna-se
+    4fbbaa6e-df0e-4e92-b92f-757217f6e3aa:
+      references:
+        relateto:
+          - illumina-parameters
+          - pacbio-parameters
+          - nanopore-parameters
+    6ac0f336-73c8-4e2c-becb-03e75c75e94b:
+      references:
+        depends:
+          - target: step1-choose-platform
+            type: whole
+        relateto:
+          - pb-dna
+          - pb-rna
+    a7be2b6b-e3e9-4fd6-a556-5db516e86d49:
+      references:
+        depends:
+          - target: step1-choose-platform
+            type: whole
+        relateto:
+          - ont-dna
+          - ont-rna
+    50774c57-7ea8-4fdc-a749-1c5d04ffed79:
+      references:
+        depends:
+          - target: pacbio-parameters
+            type: whole
+    187b66e4-6a23-45f7-98d7-09d3e0a4e119:
+      references:
+        depends:
+          - target: pacbio-parameters
+            type: whole
+    a93e977a-40d3-474b-9dc1-31d93d124774:
+      references:
+        depends:
+          - target: illumina-parameters
+            type: whole
+    77ed50c1-6c5d-47e5-8da4-788cc278c275:
+      references:
+        depends:
+          - target: illumina-parameters
+            type: whole
+    f259b8e4-e1b3-45af-a03a-636858e474c1:
+      references:
+        depends:
+          - target: illumina-parameters
+            type: whole
+    bedb4bc6-5a1c-4f22-a026-a1e7b751f6ae:
+      references:
+        depends:
+          - target: illumina-parameters
+            type: whole
+    db04247c-6ee5-4836-b980-9ce8ec40186a:
+      references:
+        depends:
+          - target: nanopore-parameters
+            type: whole
+    d0bdae40-ee7d-43cf-bece-42e89287d0fc:
+      references:
+        depends:
+          - target: nanopore-parameters
+            type: whole
+  Designer:
+    4fbbaa6e-df0e-4e92-b92f-757217f6e3aa:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 30
+        y: 300
+      z: 1
+      relateto:
+        - fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+        - 6ac0f336-73c8-4e2c-becb-03e75c75e94b
+        - a7be2b6b-e3e9-4fd6-a556-5db516e86d49
+    a7be2b6b-e3e9-4fd6-a556-5db516e86d49:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 150
+        y: 30
+      z: 1
+      relateto:
+        - db04247c-6ee5-4836-b980-9ce8ec40186a
+        - d0bdae40-ee7d-43cf-bece-42e89287d0fc
+    d0bdae40-ee7d-43cf-bece-42e89287d0fc:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 30
+      z: 1
+    db04247c-6ee5-4836-b980-9ce8ec40186a:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 120
+      z: 1
+    6ac0f336-73c8-4e2c-becb-03e75c75e94b:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 150
+        y: 210
+      z: 1
+      relateto:
+        - 50774c57-7ea8-4fdc-a749-1c5d04ffed79
+        - 187b66e4-6a23-45f7-98d7-09d3e0a4e119
+    187b66e4-6a23-45f7-98d7-09d3e0a4e119:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 210
+      z: 1
+    50774c57-7ea8-4fdc-a749-1c5d04ffed79:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 300
+      z: 1
+    fe252ef3-e5fd-4fe9-ad98-97cd23e998b9:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 150
+        y: 480
+      z: 1
+      relateto:
+        - a93e977a-40d3-474b-9dc1-31d93d124774
+        - 77ed50c1-6c5d-47e5-8da4-788cc278c275
+        - f259b8e4-e1b3-45af-a03a-636858e474c1
+        - bedb4bc6-5a1c-4f22-a026-a1e7b751f6ae
+    bedb4bc6-5a1c-4f22-a026-a1e7b751f6ae:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 390
+      z: 1
+    f259b8e4-e1b3-45af-a03a-636858e474c1:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 480
+      z: 1
+    77ed50c1-6c5d-47e5-8da4-788cc278c275:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 570
+      z: 1
+    a93e977a-40d3-474b-9dc1-31d93d124774:
+      size:
+        width: 90
+        height: 60
+      position:
+        x: 270
+        y: 660
+      z: 1
+    ab0d13bf-e6c8-4fc5-8172-048f7a30e854:
+      source:
+        id: 4fbbaa6e-df0e-4e92-b92f-757217f6e3aa
+      target:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+      z: 10
+    e2ca5622-0446-44c7-8e92-b2584113a92a:
+      source:
+        id: 4fbbaa6e-df0e-4e92-b92f-757217f6e3aa
+      target:
+        id: 6ac0f336-73c8-4e2c-becb-03e75c75e94b
+      z: 10
+    7679b0f3-5a8f-4651-a00f-f94ec7a52663:
+      source:
+        id: 4fbbaa6e-df0e-4e92-b92f-757217f6e3aa
+      target:
+        id: a7be2b6b-e3e9-4fd6-a556-5db516e86d49
+      z: 10
+    7b4ad0a7-221f-4f2b-9c34-16061eb843fe:
+      source:
+        id: a7be2b6b-e3e9-4fd6-a556-5db516e86d49
+      target:
+        id: db04247c-6ee5-4836-b980-9ce8ec40186a
+      z: 10
+    448f5632-a700-4c0c-a483-037689880aff:
+      source:
+        id: a7be2b6b-e3e9-4fd6-a556-5db516e86d49
+      target:
+        id: d0bdae40-ee7d-43cf-bece-42e89287d0fc
+      z: 10
+    d10de1ae-6fa0-440b-9f3e-f16509681faf:
+      source:
+        id: 6ac0f336-73c8-4e2c-becb-03e75c75e94b
+      target:
+        id: 50774c57-7ea8-4fdc-a749-1c5d04ffed79
+      z: 10
+    c31803e4-910a-464c-8c24-98702d1f6abe:
+      source:
+        id: 6ac0f336-73c8-4e2c-becb-03e75c75e94b
+      target:
+        id: 187b66e4-6a23-45f7-98d7-09d3e0a4e119
+      z: 10
+    c90e60e1-c016-49f1-a9b3-547627a4dee2:
+      source:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+      target:
+        id: a93e977a-40d3-474b-9dc1-31d93d124774
+      z: 10
+    c4ce9b82-4726-44c2-8311-ac86718e8615:
+      source:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+      target:
+        id: 77ed50c1-6c5d-47e5-8da4-788cc278c275
+      z: 10
+    53f7d83f-e9f9-4976-8bcd-7bc44edf15dd:
+      source:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+      target:
+        id: f259b8e4-e1b3-45af-a03a-636858e474c1
+      z: 10
+    edf11c78-0386-4773-87f9-fe6838483ba3:
+      source:
+        id: fe252ef3-e5fd-4fe9-ad98-97cd23e998b9
+      target:
+        id: bedb4bc6-5a1c-4f22-a026-a1e7b751f6ae
+      z: 10
