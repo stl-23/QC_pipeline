@@ -1,4 +1,4 @@
-# QC_piplinev1.0
+# QC_pipelinev1.0
 The quality control pipeline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
 
 ```
@@ -8,7 +8,7 @@ usage: QC_pipline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,p
 
 EXAMPLES: 
 python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ 
--c illumina -omic DNA -s PE -fastp_p "-w 1" 
+-c illumina -omic DNA -s PE -fastp_p "-q 20 -u 50" 
 python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/
 -c pacbio -omic RNA -mt Sequel -ccs_p "-noPolish --minPasses 1" -lima_p "--isoseq --no-pbi" -isoseq3_p ";--verbose;" -lordec_p "-m 2G" 
 python3 QC_pipline_v1.py -inputs /root/my_data/example_inputs/ -outputs /root/my_data/example_outputs/ 
