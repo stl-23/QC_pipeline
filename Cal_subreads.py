@@ -48,12 +48,12 @@ if __name__ == '__main__':
     input_file = sys.argv[1]  ## file that generates by samtools stats
     read_total_num,read_total_length,read_mean,read_max,N50,read_lst = cal(input_file)
     print('total subreads number: '+str(read_total_num))
-    print('total_subreads length: '+str(read_total_length))
+    print('total subreads length: '+str(read_total_length))
     print('average subreads length: '+str(read_mean))
     print('longest subreads length: '+str(read_max))
     print('subreads N50: '+str(N50))
     out_prefix=sys.argv[2]
-    outfile_name = out_prefix+'subread_length.list'
+    outfile_name = out_prefix+'.subread_length.list'
     fw = open(outfile_name,'w')
     fw.write('\n'.join(read_lst))
     fw.close()
