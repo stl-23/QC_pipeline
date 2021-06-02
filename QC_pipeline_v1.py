@@ -82,8 +82,8 @@ def parse_pacbio_read_dir(inputs, outs, mt_type='Sequel'):
     seq_suffix = ['.subreads.bam','1.bax.h5','.2.bax.h5','.3.bax.h5']
     lst = [file for file in lst for suffix in seq_suffix if file.endswith(suffix)]
     if not lst:
-        print("No such file or directory or wrong file name,must be .subreads.bam or .1/2/3.bax.h5")
-        exit()
+        raise Exception("No such file or directory or wrong file name,must be .subreads.bam or .1/2/3.bax.h5")
+
     if mt_type == 'Sequel':
         samples = [i.replace('.subreads.bam','') for i in lst if i.endswith('.subreads.bam')]  # or .subreadset.xml
         samples = set(samples)
@@ -216,6 +216,7 @@ if __name__ == '__main__':
     bam2fasta = os.path.join(smrtlink9,'bam2fasta')
     isoseq3 = os.path.join(smrtlink9,'isoseq3')
     samtools = os.path.join(smrtlink9,'samtools')
+    pbindex = os.path.join(smrtlink9,'pbindex')
     #ccs = getConfig('QC', 'ccs').strip("'")
     #lima = getConfig('QC', 'lima').strip("'")
     #bax2bam = getConfig('QC', 'bax2bam').strip("'")
@@ -289,6 +290,7 @@ if __name__ == '__main__':
                 cmds = map(lambda x,y:x+'\n'+y,rm_RNA_cmds,run_cmds)
                 shell_cmd(cmds, cmd_files, script)
     elif platform_choice == 'pacbio':
+        index_cmd = []
         static_cmd = []
         correct_cmd = []
         samples, input1, input2, input3, output1 = parse_pacbio_read_dir(input_dir, output_dir, mt_type)
@@ -306,11 +308,19 @@ if __name__ == '__main__':
                     else:
                         ccs_parameters = ccs_parameters
                     static_cmd.append("""#!/usr/bin/bash
-{samtools} stats {input1}.subreads.bam > {output1}.stat.tmp
-python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
-Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
+{{
+{samtools} stats {input1}.subreads.bam > {output1}.subreads.stat.tmp
+python {Cal_subreads} {output1}.subreads.stat.tmp {output1}.subreads_length.list > {output1}.subreads.stat.list
+Rscript {read_distribution_hist} {output1}.subreads_length.list {output1}.subreads
+}}&
+{{
 {ccs9} {input1}.subreads.bam {output1}.ccs.bam {ccs_p}
+{samtools} stats {output1}.ccs.bam > {output1}.ccs.stat.tmp
+python {Cal_subreads} {output1}.ccs.stat.tmp {output1}.ccs_length.list > {output1}.ccs.stat.list
+Rscript {read_distribution_hist} {output1}.ccs_length.list {output1}.ccs
 {bam2fasta} {output1}.ccs.bam -o {output1}.pacbio
+}}&
+rm *.stat.tmp
 """.format(samtools=samtools,input1=input1[index],Cal_subreads=cal_subreads,output1=output1[index],
             read_distribution_hist=read_distribution_hist,ccs9=ccs9,ccs_p=ccs_parameters,
             bam2fasta=bam2fasta))
@@ -327,7 +337,7 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
                             print(e)
                     cmd_files.append(sample + '.sh')
                 if correct_cmd:
-                    cmds = map(lambda x,y:x+'\n'+y,correct_cmd,static_cmd)
+                    cmds = map(lambda x,y:x+'\n'+y,static_cmd,correct_cmd)
                 else:
                     cmds = static_cmd
                 shell_cmd(cmds, cmd_files,script)
@@ -342,11 +352,19 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
                         ccs_parameters = ccs_parameters
                     static_cmd.append("""#!/usr/bin/bash
 {bax2bam} {input_1} {input_2} {input_3} -o {output1}
-{samtools} stats {output1}.subreads.bam > {output1}.stat.tmp
-python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
-Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
+{{
+{samtools} stats {output1}.subreads.bam > {output1}.subreads.stat.tmp
+python {Cal_subreads} {output1}.subreads.stat.tmp {output1}.subreads_length.list > {output1}.subreads.stat.list
+Rscript {read_distribution_hist} {output1}.subreads_length.list {output1}.subreads
+}}&
+{{
 {ccs7} {output1}.subreads.bam {output1}.ccs.bam {ccs_p}
+{samtools} stats {output1}.ccs.bam > {output1}.ccs.stat.tmp
+python {Cal_subreads} {output1}.ccs.stat.tmp {output1}.ccs_length.list > {output1}.ccs.stat.list
+Rscript {read_distribution_hist} {output1}.ccs_length.list {output1}.ccs
 {bam2fasta} {output1}.ccs.bam -o {output1}.pacbio
+}}&
+rm *.stat.tmp
 """.format(bax2bam=bax2bam, input_1=input_1, input_2=input_2, input_3=input_3, sample=sample, output_dir=output_dir,
             samtools = samtools, input1 = input1[index], Cal_subreads = cal_subreads, output1 = output1[index],
             read_distribution_hist = read_distribution_hist, ccs7 = ccs7, ccs_p = ccs_parameters,
@@ -364,7 +382,7 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
                             print(e)
                     cmd_files.append(sample + '.sh')
                 if correct_cmd:
-                    cmds = map(lambda x,y:x+'\n'+y,correct_cmd,static_cmd)
+                    cmds = map(lambda x,y:x+'\n'+y,static_cmd,correct_cmd)
                 else:
                     cmds = static_cmd
                 shell_cmd(cmds, cmd_files,script)
@@ -375,7 +393,8 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
             isoseq3_polish = ''
 
             if lima_parameters == '':
-                lima_parameters = "--isoseq --no-pbi"
+                #lima_parameters = "--isoseq --no-pbi" ## smrt-link v7.0
+                lima_parameters = "--isoseq"  ## smrt-link v9.0
             else:
                 lima_parameters = lima_parameters
             if isoseq3_parameters == '':
@@ -395,21 +414,34 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
                         ccs_parameters += ' --report-file %s.ccs.report.txt' % output1[index]
                     else:
                         ccs_parameters = ccs_parameters
+
                     static_cmd.append("""#!/usr/bin/bash
-{samtools} stats {input1}.subreads.bam > {output1}.stat.tmp
-python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
-Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
-{ccs9} {output1}.subreads.bam {output1}.ccs.bam {ccs_p}
+{{
+{samtools} stats {input1}.subreads.bam > {output1}.subreads.stat.tmp
+python {Cal_subreads} {output1}.subreads.stat.tmp {output1}.subreads_length.list > {output1}.subreads.stat.list
+Rscript {read_distribution_hist} {output1}.subreads_length.list {output1}.subreads
+}}&
+{{
+{ccs9} {input1}.subreads.bam {output1}.ccs.bam {ccs_p}
+{samtools} stats {output1}.ccs.bam > {output1}.ccs.stat.tmp
+python {Cal_subreads} {output1}.ccs.stat.tmp {output1}.ccs_length.list > {output1}.ccs.stat.list
+Rscript {read_distribution_hist} {output1}.ccs_length.list {output1}.ccs
+
 {lima} {output1}.ccs.bam {primers} {output1}.demux.ccs.bam {lima_p}
-{isoseq3} refine {output1}.demux.primer_5p--primer_3p.bam primers.fasta {output1}.flnc.bam {isoseq3_refine}
+{isoseq3} refine {output1}.demux.ccs.primer_5p--primer_3p.bam {primers} {output1}.flnc.bam {isoseq3_refine}
 {isoseq3} cluster {output1}.flnc.bam {output1}.unpolished.bam {isoseq3_cluster}
-{isoseq3} polish {output1}.unpolished.bam {input1} {output1}.polished.bam {isoseq3_polish}
+{isoseq3} polish {output1}.unpolished.bam {input1}.subreads.bam {output1}.polished.bam {isoseq3_polish}
 {bam2fasta} {output1}.polished.bam -o {output1}.pacbio
+}}&
+rm *.stat.tmp
 """.format(samtools=samtools,input1=input1[index],Cal_subreads=cal_subreads,output1=output1[index],
             read_distribution_hist=read_distribution_hist,ccs9=ccs9, ccs_p=ccs_parameters, lima=lima,
             lima_p=lima_parameters, isoseq3=isoseq3, isoseq3_refine=isoseq3_refine,
             isoseq3_cluster=isoseq3_cluster,isoseq3_polish=isoseq3_polish, bam2fasta=bam2fasta,primers=primers))
 
+                    if not os.path.exists('%s.subreads.bam.pbi' %input1[index]):
+                        index_cmd.append(f"""{pbindex} {input1}.subreads.bam""".format(pbindex=pbindex,
+                                                                                       input1=input1[index]))
                     if correct == 'yes':
                         try:
                             correct_data_lst_tmp = [file for file in correct_data_lst if file.startswith(input1[index])]
@@ -420,18 +452,18 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
             output1=output1[index], lordec_p=lordec_correct_parameters))
                         except IOError as e:
                             print(e)
-                        cmd_files.append(sample + '.sh')
-                    if correct_cmd:
-                        cmds = map(lambda x,y:x+'\n'+y,correct_cmd,static_cmd)
-                    else:
-                        cmds = static_cmd
-                    shell_cmd(cmds, cmd_files, script)
+                    cmd_files.append(sample + '.sh')
+                if correct_cmd:
+                    cmds = map(lambda x,y,z:x+'\n'+y+'\n'+z,index_cmd,static_cmd,correct_cmd)
+                else:
+                    cmds = map(lambda x,y:x+'\n'+y,index_cmd,static_cmd)
+                shell_cmd(cmds, cmd_files, script)
 
             elif mt_type == 'RS':
-                if not re.search('-noPolish', ccs_parameters):
-                    ccs_parameters += " -noPolish"  ## smrt-link v7.0
+                if not re.search('--noPolish', ccs_parameters):
+                    ccs_parameters += " --noPolish"  ## smrt-link v7.0
                 if not re.search('--minPasses', ccs_parameters):
-                    ccs_parameters += " --minPasses 1"  ## smrt-link v9.0
+                    ccs_parameters += " --minPasses 1"  ## smrt-link v7.0
                 for index, sample in enumerate(samples):
                     input_1, input_2, input_3 = input_dir + sample + '.1.bax.h5', input_dir + sample + '.2.bax.h5', \
                                                 input_dir + sample + '.3.bax.h5'
@@ -441,19 +473,30 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
                         ccs_parameters = ccs_parameters
                     static_cmd.append("""#!/usr/bin/bash
 {bax2bam} {input_1} {input_2} {input_3} -o {output1}
-{samtools} stats {output1}.subreads.bam > {output1}.stat.tmp
-python {Cal_subreads} {output1}.stat.tmp {output1} > {output1}.stat.list
-Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
+{{
+{samtools} stats {output1}.subreads.bam > {output1}.subreads.stat.tmp
+{pbindex} {output1}.subreads.bam
+python {Cal_subreads} {output1}.subreads.stat.tmp {output1}.subreads_length.list > {output1}.subreads.stat.list
+Rscript {read_distribution_hist} {output1}.subreads_length.list {output1}.subreads
+}}&
+{{
 {ccs7} {output1}.subreads.bam {output1}.ccs.bam {ccs_p}
+{samtools} stats {output1}.ccs.bam > {output1}.ccs.stat.tmp
+python {Cal_subreads} {output1}.ccs.stat.tmp {output1}.ccs_length.list > {output1}.ccs.stat.list
+Rscript {read_distribution_hist} {output1}.ccs_length.list {output1}.ccs
+
 {lima} {output1}.ccs.bam {primers} {output1}.demux.ccs.bam {lima_p}
-{isoseq3} refine {output1}.demux.primer_5p--primer_3p.bam primers.fasta {output1}.flnc.bam {isoseq3_refine}
+{isoseq3} refine {output1}.demux.ccs.primer_5p--primer_3p.bam {primers} {output1}.flnc.bam {isoseq3_refine}
 {isoseq3} cluster {output1}.flnc.bam {output1}.unpolished.bam {isoseq3_cluster}
-{isoseq3} polish {output1}.unpolished.bam {input1} {output1}.polished.bam {isoseq3_polish}
+{isoseq3} polish {output1}.unpolished.bam {output1}.subreads.bam  {output1}.polished.bam {isoseq3_polish}
+
 {bam2fasta} {output1}.polished.bam -o {output1}.pacbio
+}}&
+rm *.stat.tmp
 """.format(bax2bam=bax2bam, input_1=input_1, input_2=input_2, input_3=input_3, sample=sample, output_dir=output_dir,
             samtools = samtools, input1 = input1[index], Cal_subreads = cal_subreads, output1 = output1[index],
             read_distribution_hist = read_distribution_hist, ccs7 = ccs7, ccs_p = ccs_parameters, lima=lima,
-            lima_p=lima_parameters, isoseq3=isoseq3, isoseq3_refine=isoseq3_refine,
+            lima_p=lima_parameters, isoseq3=isoseq3, isoseq3_refine=isoseq3_refine,pbindex=pbindex,
             isoseq3_cluster=isoseq3_cluster, isoseq3_polish=isoseq3_polish, bam2fasta=bam2fasta,primers=primers))
                     if correct == 'yes':
                         try:
@@ -465,12 +508,12 @@ Rscript {read_distribution_hist} {output1}.subread_length.list {output1}
             output1=output1[index], lordec_p=lordec_correct_parameters))
                         except IOError as e:
                             print(e)
-                        cmd_files.append(sample + '.sh')
-                    if correct_cmd:
-                        cmds = map(lambda x,y:x+'\n'+y,correct_cmd,static_cmd)
-                    else:
-                        cmds = static_cmd
-                    shell_cmd(cmds, cmd_files, script)
+                    cmd_files.append(sample + '.sh')
+                if correct_cmd:
+                    cmds = map(lambda x,y:x+'\n'+y,static_cmd,correct_cmd)
+                else:
+                    cmds = static_cmd
+                shell_cmd(cmds, cmd_files, script)
 
     elif platform_choice == 'nanopore':
         samples, input_samples = parse_nanopore_read_dir(input_dir, output_dir)

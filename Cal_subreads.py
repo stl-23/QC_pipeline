@@ -52,8 +52,7 @@ if __name__ == '__main__':
     print('average subreads length: '+str(read_mean))
     print('longest subreads length: '+str(read_max))
     print('subreads N50: '+str(N50))
-    out_prefix=sys.argv[2]
-    outfile_name = out_prefix+'.subread_length.list'
-    fw = open(outfile_name,'w')
+    out_name=sys.argv[2]
+    fw = open(out_name,'w')
     fw.write('\n'.join(read_lst))
     fw.close()
