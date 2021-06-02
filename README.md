@@ -19,7 +19,8 @@ General options:
                         Choose a sequencing machine,illumina for short reads,pacbio and nanopore for long reads,default is illumina
   -omic OMIC_TYPE, --omic_type OMIC_TYPE
                         The omics type:DNA(genome) or RNA(transciptome),default is DNA
-
+  --script {True,False}
+                        Write commands into shell files,do not run in local
 Short reads options (illumina):
   -s SEQ_TYPE, --seq_type SEQ_TYPE
                         Paired end(PE) or singe end(SE) short reads in illumina sequencing platform,default is PE
