@@ -103,7 +103,7 @@ def parse_pacbio_read_dir(inputs, outs, mt_type='Sequel'):
 
 def parse_nanopore_read_dir(inputs, outs):
     input_path = os.path.abspath(inputs) + '/'
-    out_path = os.path.abspath(outs) + '/'
+    #out_path = os.path.abspath(outs) + '/'
     lst = os.listdir(input_path)
     samples = [i.replace('.fastq.gz','') for i in lst if i.endswith('.fastq.gz')]
     samples = set(samples)
@@ -217,11 +217,7 @@ if __name__ == '__main__':
     isoseq3 = os.path.join(smrtlink9,'isoseq3')
     samtools = os.path.join(smrtlink9,'samtools')
     pbindex = os.path.join(smrtlink9,'pbindex')
-    #ccs = getConfig('QC', 'ccs').strip("'")
-    #lima = getConfig('QC', 'lima').strip("'")
-    #bax2bam = getConfig('QC', 'bax2bam').strip("'")
-    #bam2fasta = getConfig('QC', 'bam2fasta').strip("'")
-    #isoseq3 = getConfig('QC', 'isoseq3').strip("'")
+
     lordec_correct = getConfig('QC','lordec_correct').strip("'")
     lordec_trim = getConfig('QC','lordec_trim').strip("'")
     nanoplot = getConfig('QC','nanoplot').strip("'")
