@@ -1,12 +1,25 @@
 # QC_pipelinev1.0
 The quality control pipeline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
 
-# Software dependency installation
+# Dependencies download and usage
 pull our docker image from Docker Hub 
 ```
 docker pull stl23/qc:v1.6
 ```
-# Usage
+run
+```
+docker run -v "YOUR_INPUT_DIR":"/input"\
+-v "YOUR_OUTPUT_DIR:/output" \
+qc:v1.6 bash -c 'python3 /test/scripts/qc/QC_pipeline_v1.py \
+-inputs /input \
+-outputs /output \
+-c illumina \
+-omic DNA \
+-s PE \
+-fastp_p "-q 20 -u 50" \
+--script False'
+```
+# Parameters
 ```
 usage: QC_pipeline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,pacbio,nanopore}] [-omic OMIC_TYPE] [-s SEQ_TYPE] [-fastp_p FASTP_PARAMETERS] [-mt MACHINE_TYPE]
                         [-cr {no,yes}] [-ccs_p CCS_PARAMETERS] [-lima_p LIMA_PARAMETERS] [-isoseq3_p ISOSEQ3_PARAMETERS] [-lordec_p LORDEC_CORRECT_PARAMETERS]
