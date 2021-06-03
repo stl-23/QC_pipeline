@@ -206,9 +206,9 @@ if __name__ == '__main__':
 
 
     ##### Parse software and database config ####
-    fastp = getConfig('QC','fastp').strip("'")
-    smrtlink9 = getConfig('QC','smrtlink9').strip("'")
-    smrtlink7 = getConfig('QC','smrtlink7').strip("'")
+    fastp = getConfig('QC','fastp')
+    smrtlink9 = getConfig('QC','smrtlink9')
+    smrtlink7 = getConfig('QC','smrtlink7')
     ccs9 = os.path.join(smrtlink9,'ccs')
     ccs7 = os.path.join(smrtlink7,'ccs')
     lima = os.path.join(smrtlink9,'lima')
@@ -218,11 +218,11 @@ if __name__ == '__main__':
     samtools = os.path.join(smrtlink9,'samtools')
     pbindex = os.path.join(smrtlink9,'pbindex')
 
-    lordec_correct = getConfig('QC','lordec_correct').strip("'")
-    lordec_trim = getConfig('QC','lordec_trim').strip("'")
-    nanoplot = getConfig('QC','nanoplot').strip("'")
-    nanofilt = getConfig('QC','nanofilt').strip("'")
-    hisat2 = getConfig('QC','hisat2').strip("'")
+    lordec_correct = getConfig('QC','lordec_correct')
+    lordec_trim = getConfig('QC','lordec_trim')
+    nanoplot = getConfig('QC','nanoplot')
+    nanofilt = getConfig('QC','nanofilt')
+    hisat2 = getConfig('QC','hisat2')
 
     rRNA_data = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))),'database','rRNA','rRNAs')
     primers = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'primers.fasta')
