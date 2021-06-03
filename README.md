@@ -2,15 +2,15 @@
 The quality control pipeline for sequencing reads(DNA and RNA library) of illumina,Pacbio (RS/Sequel),Nanopore platform
 
 # Dependencies download and usage
-pull our docker image from Docker Hub 
+1. Pull our docker image from Docker Hub 
 ```
 docker pull stl23/qc:v1.6
 ```
-run
+2. Run the pipeline
 ```
 docker run -v "YOUR_INPUT_DIR":"/input"\
 -v "YOUR_OUTPUT_DIR:/output" \
-qc:v1.6 bash -c 'python3 /test/scripts/qc/QC_pipeline_v1.py \
+qc:v1.6 bash -c 'python3 /scripts/QC_pipeline_v1.py \
 -inputs /input \
 -outputs /output \
 -c illumina \
