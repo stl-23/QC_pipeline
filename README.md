@@ -11,7 +11,7 @@ docker run -itd --name qcv1.7  -v "YOUR_INPUT_DIR":/input -v "YOUR_OUTPUT_DIR":/
 ```
 docker run -v "YOUR_INPUT_DIR":/input\
 -v "YOUR_OUTPUT_DIR":/output \
-qc:v1.7 bash -c 'python3 /scripts/qc/QC_pipeline_v1.py \
+qc:v1.7 bash -c 'python3 /script/qc/QC_pipeline_v1.py \
 -inputs /input \
 -outputs /output \
 -c illumina \
