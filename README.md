@@ -5,6 +5,7 @@ The quality control pipeline for sequencing reads(DNA and RNA library) of illumi
 1. Pull our docker image from Docker Hub 
 ```
 docker pull stl23/qc:v1.6
+docker run -itd --name qcv1.6  -v "YOUR_INPUT_DIR":"/input" -v "YOUR_OUTPUT_DIR:/output" qc:v1.6 /bin/bash
 ```
 2. Run the pipeline
 ```
