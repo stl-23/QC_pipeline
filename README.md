@@ -5,14 +5,13 @@ The quality control pipeline for sequencing reads(DNA and RNA library) of illumi
 1. Pull our docker image from Docker Hub 
 ```
 docker pull stl23/qc:v1.7
-docker run -itd --name qcv1.7 -v “YOUR_WORK_DIR”:/work -v "YOUR_INPUT_DIR":/input -v "YOUR_OUTPUT_DIR":/output qc:v1.7 /bin/bash
 ```
 2. Run the pipeline
 ```
 docker run -v "YOUR_INPUT_DIR":/input\
 -v "YOUR_OUTPUT_DIR":/output \
 -v “YOUR_WORK_DIR”:/work \
-qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
+stl23/qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
 -inputs /input \
 -outputs /output \
 -c illumina \
