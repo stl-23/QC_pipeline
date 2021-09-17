@@ -20,6 +20,21 @@ stl23/qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
 -fastp_p "-q 20 -u 50" \
 --script False'
 ```
+注意：有时候系统的安全模块selinux会把权限禁掉，导致出现无法读取目录或文件“cannot open directory xx: Permission denied”，可以在运行时加 --privileged=true，即
+```
+docker run -v "YOUR_INPUT_DIR":/input\
+-v "YOUR_OUTPUT_DIR":/output \
+-v “YOUR_WORK_DIR”:/work \
+--privileged=true \
+stl23/qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
+-inputs /input \
+-outputs /output \
+-c illumina \
+-omic DNA \
+-s PE \
+-fastp_p "-q 20 -u 50" \
+--script False'
+```
 # Parameters
 ```
 usage: QC_pipeline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,pacbio,nanopore}] [-omic OMIC_TYPE] [-s SEQ_TYPE] [-fastp_p FASTP_PARAMETERS] [-mt MACHINE_TYPE]
