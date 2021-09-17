@@ -20,7 +20,7 @@ stl23/qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
 -fastp_p "-q 20 -u 50" \
 --script False'
 ```
-注意：有时候系统(例如：centos7)的安全模块selinux会把docker权限禁掉，导致出现无法读取目录或文件“cannot open directory xx: Permission denied”，可以在运行时加 --privileged=true，即
+注意：1 有时候系统(例如：centos7)的安全模块selinux会把docker权限禁掉，导致出现无法读取目录或文件“cannot open directory xx: Permission denied”，可以在运行时加 --privileged=true，即
 ```
 docker run -v "YOUR_INPUT_DIR":/input\
 -v "YOUR_OUTPUT_DIR":/output \
@@ -35,6 +35,7 @@ stl23/qc:v1.7 bash -c 'cd /work/ && python3 /script/qc/QC_pipeline_v1.py \
 -fastp_p "-q 20 -u 50" \
 --script False'
 ```
+2 docker读取的输入目录下数据不能是软链接形式！
 # Parameters
 ```
 usage: QC_pipeline_v1.py [-inputs INPUTS] [-outputs OUTPUTS] [-h] [-c {illumina,pacbio,nanopore}] [-omic OMIC_TYPE] [-s SEQ_TYPE] [-fastp_p FASTP_PARAMETERS] [-mt MACHINE_TYPE]
